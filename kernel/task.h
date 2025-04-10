@@ -20,6 +20,7 @@ typedef struct task {
     int pid;               // Process ID
     char name[32];         // Task name
     task_state_t state;    // Current state
+    uint32_t sleep_until;  // Tick when task should wake up
     int used;              // Is task slot used?
 } task_t;
 
