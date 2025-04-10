@@ -8,38 +8,32 @@
 // Simulated task functions
 void task1() {
     while (1) {
-        print("Running Task 1...\n");
-        for (int i = 0; i < 1000000; i++); // Delay loop
+        print("Task 1 running\n");
+        for (int i = 0; i < 1000000; i++); // Delay
     }
 }
 
 void task2() {
     while (1) {
-        print("Running Task 2...\n");
-        for (int i = 0; i < 1000000; i++); // Delay loop
+        print("Task 2 running\n");
+        for (int i = 0; i < 1000000; i++); // Delay
     }
 }
 
 void kernel_main() {
-    // Setup stack pointer
-    asm volatile("mov $0x9000, %esp");
-    
     clear_screen();
-    print("Welcome to QOS - Quantum Operating System\n");
-    print("Initializing task system...\n");
+    print("Welcome to QOS with Preemptive Multitasking!\n\n");
 
-    // Initialize task system once at startup
-    init_tasking();
+    // Initialize systems
+    interrupts_init();  // Sets up timer interrupts
+    init_tasking();     // Initializes task system
+
+    // Create test tasks
     create_task(task1);
     create_task(task2);
 
-    print("System ready\n");
-
+    // Main idle loop - task switching now happens via timer interrupts
     while (1) {
-        // Simple round-robin scheduling
-        schedule();
-        
-        // Small delay to prevent flooding the screen
-        for (volatile int i = 0; i < 1000000; i++);
+        asm volatile("hlt");  // Halt CPU when idle
     }
 }

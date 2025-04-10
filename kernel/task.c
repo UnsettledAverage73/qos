@@ -6,8 +6,6 @@
 #include "ports.h"
 #include "memory.h"  // For kmalloc()
 
-extern void context_switch(uint32_t*, uint32_t*, uint32_t*, uint32_t*);
-
 task_t *current_task = 0;
 task_t *ready_queue = 0;
 
@@ -18,9 +16,11 @@ int next_pid = 1;  // Start PIDs from 1
 task_t* get_free_task() {
     for (int i = 0; i < MAX_TASKS; i++) {
         if (!task_list[i].used) {
-            task_list[i].used = 1;
-            task_list[i].pid = next_pid++;
-            task_list[i].ebp = 0;
+    task_list[i].used = 1;
+    task_list[i].pid = next_pid++;
+    task_list[i].ebp = 0;
+    task_list[i].state = TASK_READY;
+    strcpy(task_list[i].name, "task");
             return &task_list[i];
         }
     }
@@ -85,23 +85,37 @@ task_t* create_task(void (*entry)()) {
 
 // Context switching scheduler
 void schedule() {
-    if (!current_task || !current_task->next) return;
+    if (!current_task) return;
 
+    // Mark current task as ready (unless terminating)
+    if (current_task->state != TASK_TERMINATED) {
+        current_task->state = TASK_READY;
+    }
+
+    // Find next runnable task
     task_t* next = current_task->next;
+    while (next && next->state != TASK_READY) {
+        next = next->next;
+    }
+    if (!next) next = ready_queue; // Wrap around
     
-    // Switch context using assembly function
-    context_switch(
-        &current_task->esp,
-        &current_task->ebp,
-        &next->esp,
-        &next->ebp
-    );
-
-    current_task = next;
-
-    print("Switched to task ");
-    char pid_str[10];
-    int_to_ascii(current_task->pid, pid_str);
-    print(pid_str);
-    print("\n");
+    if (next && next->state == TASK_READY) {
+        next->state = TASK_RUNNING;
+        
+        // Switch context
+        asm volatile("cli");
+        context_switch(&current_task->esp, &next->esp);
+        asm volatile("sti");
+        
+        current_task = next;
+        
+        // Debug output
+        print("Switched to ");
+        print(current_task->name);
+        print(" (PID: ");
+        char pid_str[10];
+        int_to_ascii(current_task->pid, pid_str);
+        print(pid_str);
+        print(")\n");
+    }
 }
