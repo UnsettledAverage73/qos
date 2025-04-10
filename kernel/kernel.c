@@ -5,8 +5,9 @@
 #include "scheduler.h"
 #include "interrupts.h"
 
-// Forward declaration
+// Forward declarations
 void interrupts_init();
+void task_sleep(uint32_t ticks);
 
 // Test task functions
 void task1() {
