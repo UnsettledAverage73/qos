@@ -5,11 +5,11 @@ CFLAGS = -ffreestanding -m32 -Wall -Wextra -Ikernel
 LDFLAGS = -T linker.ld -nostdlib
 
 # Source files
-ASM_SRC = kernel/boot_header.asm kernel/isr.asm kernel/irq.asm kernel/idt.asm
-ASM_OBJ = kernel/kernel_entry.o kernel/isr_asm.o kernel/irq_asm.o kernel/idt_asm.o
+ASM_SRC = kernel/boot_header.asm kernel/isr.asm kernel/irq.asm kernel/idt.asm kernel/switch.asm
+ASM_OBJ = kernel/kernel_entry.o kernel/isr_asm.o kernel/irq_asm.o kernel/idt_asm.o kernel/switch_asm.o
 
 C_SRC = kernel/kernel.c kernel/screen.c kernel/keyboard.c kernel/ports.c kernel/string.c \
-        kernel/idt.c kernel/isr.c kernel/interrupts.c kernel/time.c kernel/irq.c
+        kernel/idt.c kernel/isr.c kernel/interrupts.c kernel/time.c kernel/irq.c kernel/task.c
 C_OBJ = kernel/kernel.o kernel/screen.o kernel/keyboard.o kernel/ports.o kernel/string.o \
         kernel/idt.o kernel/isr.o kernel/interrupts.o kernel/time.o kernel/irq.o
 
@@ -32,6 +32,9 @@ kernel/irq_asm.o: kernel/irq.asm
 	nasm -f elf32 $< -o $@
 
 kernel/idt_asm.o: kernel/idt.asm
+	nasm -f elf32 $< -o $@
+
+kernel/switch_asm.o: kernel/switch.asm
 	nasm -f elf32 $< -o $@
 
 # Compile .c files

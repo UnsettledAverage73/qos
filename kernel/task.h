@@ -8,7 +8,8 @@
 
 // Task structure
 typedef struct task {
-    uint32_t esp;          // Stack pointer (used for context switch)
+    uint32_t esp;          // Stack pointer
+    uint32_t ebp;          // Base pointer
     uint32_t eip;          // Instruction pointer
     struct task *next;     // Pointer to next task
     int pid;               // Process ID

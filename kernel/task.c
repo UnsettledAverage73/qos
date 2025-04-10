@@ -1,9 +1,12 @@
 // kernel/task.c
 
-#include "task.h"  // Contains MAX_TASKS definition
+#include "task.h"
 #include "string.h"
 #include "screen.h"
 #include "ports.h"
+#include "memory.h"  // For kmalloc()
+
+extern void context_switch(uint32_t*, uint32_t*, uint32_t*, uint32_t*);
 
 task_t *current_task = 0;
 task_t *ready_queue = 0;
@@ -17,6 +20,7 @@ task_t* get_free_task() {
         if (!task_list[i].used) {
             task_list[i].used = 1;
             task_list[i].pid = next_pid++;
+            task_list[i].ebp = 0;
             return &task_list[i];
         }
     }
@@ -40,13 +44,29 @@ void init_tasking() {
     print("Tasking initialized\n");
 }
 
-// Simple task creation (simulated)
+// Task creation with proper stack setup
 task_t* create_task(void (*entry)()) {
     task_t* task = get_free_task();
     if (!task) return 0;
 
+    // Allocate stack (4KB per task)
+    uint32_t* stack = (uint32_t*)kmalloc(4096);
+    if (!stack) return 0;
+
+    // Set up initial stack frame
+    stack += 1024; // Start at top of stack
+    *(--stack) = (uint32_t)entry; // Return address
+    *(--stack) = 0x202; // EFLAGS (interrupts enabled)
+    *(--stack) = 0x8; // CS
+    *(--stack) = 0x0; // EAX, EBX, ECX, EDX, etc.
+    *(--stack) = 0x0;
+    *(--stack) = 0x0;
+    *(--stack) = 0x0;
+    *(--stack) = 0x0; // EBP will be set on first switch
+
     task->eip = (uint32_t)entry;
-    task->esp = 0;  // Would be the top of the stack in real case
+    task->esp = (uint32_t)stack;
+    task->ebp = (uint32_t)stack;
     task->next = 0;
 
     // Append to ready queue
@@ -63,14 +83,22 @@ task_t* create_task(void (*entry)()) {
     return task;
 }
 
-// Very basic round-robin scheduler
-void switch_task() {
+// Context switching scheduler
+void schedule() {
     if (!current_task || !current_task->next) return;
 
     task_t* next = current_task->next;
+    
+    // Switch context using assembly function
+    context_switch(
+        &current_task->esp,
+        &current_task->ebp,
+        &next->esp,
+        &next->ebp
+    );
+
     current_task = next;
 
-    // In real OS, save registers, load next task’s context
     print("Switched to task ");
     char pid_str[10];
     int_to_ascii(current_task->pid, pid_str);
