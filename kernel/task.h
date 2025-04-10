@@ -12,10 +12,16 @@ typedef enum {
     TASK_TERMINATED
 } task_state_t;
 
+typedef struct {
+    uint32_t eax, ebx, ecx, edx;
+    uint32_t esi, edi;
+    uint32_t esp, ebp;
+    uint32_t eip;
+    uint32_t eflags;
+} context_t;
+
 typedef struct task {
-    uint32_t esp;          // Stack pointer
-    uint32_t ebp;          // Base pointer
-    uint32_t eip;          // Instruction pointer
+    context_t context;     // CPU register state
     struct task *next;     // Next task in queue
     int pid;               // Process ID
     char name[32];         // Task name
