@@ -9,9 +9,11 @@ ASM_SRC = kernel/boot_header.asm kernel/isr.asm kernel/irq.asm kernel/idt.asm ke
 ASM_OBJ = kernel/kernel_entry.o kernel/isr_asm.o kernel/irq_asm.o kernel/idt_asm.o kernel/switch_asm.o
 
 C_SRC = kernel/kernel.c kernel/screen.c kernel/keyboard.c kernel/ports.c kernel/string.c \
-        kernel/idt.c kernel/isr.c kernel/interrupts.c kernel/time.c kernel/irq.c kernel/task.c
+        kernel/idt.c kernel/isr.c kernel/interrupts.c kernel/time.c kernel/irq.c \
+        kernel/task.c kernel/scheduler.c
 C_OBJ = kernel/kernel.o kernel/screen.o kernel/keyboard.o kernel/ports.o kernel/string.o \
-        kernel/idt.o kernel/isr.o kernel/interrupts.o kernel/time.o kernel/irq.o
+        kernel/idt.o kernel/isr.o kernel/interrupts.o kernel/time.o kernel/irq.o \
+        kernel/task.o kernel/scheduler.o
 
 OBJS = $(ASM_OBJ) $(C_OBJ)
 
