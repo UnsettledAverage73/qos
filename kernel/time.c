@@ -1,6 +1,7 @@
 #include "ports.h"
 #include "interrupts.h"
 #include "task.h"
+#include "screen.h"  // For print()
 
 #define PIT_FREQUENCY 100     // 100 Hz = 10 ms slices
 #define PIT_COMMAND_PORT 0x43
