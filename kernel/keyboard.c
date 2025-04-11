@@ -37,7 +37,7 @@ char read_char() {
     char c = 0;
     while (1) {
         scancode = read_scancode();
-        if (scancode < sizeof(scancode_to_ascii)) {
+        if ((unsigned char)scancode < sizeof(scancode_to_ascii)) {
             c = scancode_to_ascii[(int)scancode];
             if (c != 0) {
                 return c;
