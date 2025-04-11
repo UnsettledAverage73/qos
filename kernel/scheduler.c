@@ -2,6 +2,7 @@
 #include "screen.h"
 #include "ports.h"
 #include "task.h"
+#include "time.h"
 
 static task_t* task_queue[MAX_TASKS];
 static int current_task_idx = -1;

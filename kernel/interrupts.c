@@ -2,7 +2,7 @@
 #include "time.h"
 #include "screen.h"
 #include "ports.h"
-#include <stdint.h>  // For uint8_t type
+#include <stdint.h>
 
 #define PIC1_CMD  0x20
 #define PIC1_DATA 0x21
@@ -14,18 +14,6 @@ static void (*irq_handlers[16])(void);
 
 void register_interrupt_handler(uint8_t irq, void (*handler)(void)) {
     irq_handlers[irq] = handler;
-}
-
-// Internal IRQ handler that calls the registered handler
-static void internal_irq_handler(uint8_t irq) {
-    if (irq_handlers[irq]) {
-        irq_handlers[irq]();
-    }
-    // Send EOI to PIC
-    if (irq >= 8) {
-        outb(PIC2_CMD, 0x20);
-    }
-    outb(PIC1_CMD, 0x20);
 }
 
 void interrupts_init() {

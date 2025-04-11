@@ -1,8 +1,8 @@
 # Compiler and linker
 CC = i686-elf-gcc
 LD = i686-elf-ld
-CFLAGS = -ffreestanding -m32 -Wall -Wextra -Ikernel
-LDFLAGS = -T linker.ld -nostdlib
+CFLAGS = -ffreestanding -m32 -Wall -Wextra -O2 -Ikernel
+LDFLAGS = -T linker.ld -nostdlib -z noexecstack
 
 # Source files
 ASM_SRC = kernel/boot_header.asm kernel/isr.asm kernel/irq.asm kernel/idt.asm kernel/switch.asm
@@ -10,10 +10,10 @@ ASM_OBJ = kernel/kernel_entry.o kernel/isr_asm.o kernel/irq_asm.o kernel/idt_asm
 
 C_SRC = kernel/kernel.c kernel/screen.c kernel/keyboard.c kernel/ports.c kernel/string.c \
         kernel/idt.c kernel/isr.c kernel/interrupts.c kernel/time.c kernel/irq.c \
-        kernel/task.c kernel/scheduler.c
+        kernel/task.c kernel/scheduler.c kernel/memory.c
 C_OBJ = kernel/kernel.o kernel/screen.o kernel/keyboard.o kernel/ports.o kernel/string.o \
         kernel/idt.o kernel/isr.o kernel/interrupts.o kernel/time.o kernel/irq.o \
-        kernel/task.o kernel/scheduler.o
+        kernel/task.o kernel/scheduler.o kernel/memory.o
 
 OBJS = $(ASM_OBJ) $(C_OBJ)
 
@@ -62,4 +62,3 @@ run: $(ISO_NAME)
 clean:
 	rm -f $(OBJS) $(KERNEL_BIN) $(ISO_NAME)
 	rm -rf iso
-
