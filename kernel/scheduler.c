@@ -38,8 +38,8 @@ void switch_to_task(task_t* next) {
     next->state = TASK_RUNNING;
     asm volatile("cli");
     context_switch(
-        current_task_idx >= 0 ? &task_queue[current_task_idx]->esp : 0,
-        &next->esp
+        current_task_idx >= 0 ? &task_queue[current_task_idx]->context.esp : 0,
+        &next->context.esp
     );
     asm volatile("sti");
 }
@@ -55,7 +55,18 @@ void schedule() {
 
     // Skip blocked/sleeping tasks
     int original_idx = current_task_idx;
-    while (task_queue[current_task_idx]->state != TASK_READY) {
+    while (1) {
+        task_t* task = task_queue[current_task_idx];
+        
+        // Wake up sleeping tasks if their time has come
+        if (task->state == TASK_BLOCKED && task->sleep_until <= get_ticks()) {
+            task->state = TASK_READY;
+        }
+        
+        if (task->state == TASK_READY) {
+            break;
+        }
+        
         current_task_idx = (current_task_idx + 1) % total_tasks;
         if (current_task_idx == original_idx) {
             // No ready tasks found

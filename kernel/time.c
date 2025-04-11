@@ -6,8 +6,15 @@
 #define PIT_COMMAND_PORT 0x43
 #define PIT_CHANNEL0_PORT 0x40
 
+static uint32_t system_ticks = 0;
+
 static void timer_callback() {
+    system_ticks++;
     schedule();  // switch tasks on every timer interrupt
+}
+
+uint32_t get_ticks() {
+    return system_ticks;
 }
 
 void init_timer() {

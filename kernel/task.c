@@ -18,7 +18,7 @@ task_t* get_free_task() {
         if (!task_list[i].used) {
     task_list[i].used = 1;
     task_list[i].pid = next_pid++;
-    task_list[i].ebp = 0;
+    task_list[i].context.ebp = 0;
     task_list[i].state = TASK_READY;
     strcpy(task_list[i].name, "task");
             return &task_list[i];
@@ -35,8 +35,8 @@ void init_tasking() {
         return;
     }
 
-    current_task->esp = 0;
-    current_task->eip = 0;
+    current_task->context.esp = 0;
+    current_task->context.eip = 0;
     current_task->next = 0;
     // pid and used already set by get_free_task()
 
@@ -64,9 +64,9 @@ task_t* create_task(void (*entry)()) {
     *(--stack) = 0x0;
     *(--stack) = 0x0; // EBP will be set on first switch
 
-    task->eip = (uint32_t)entry;
-    task->esp = (uint32_t)stack;
-    task->ebp = (uint32_t)stack;
+    task->context.eip = (uint32_t)entry;
+    task->context.esp = (uint32_t)stack;
+    task->context.ebp = (uint32_t)stack;
     task->next = 0;
 
     // Append to ready queue
@@ -83,39 +83,15 @@ task_t* create_task(void (*entry)()) {
     return task;
 }
 
-// Context switching scheduler
-void schedule() {
+// Forward declaration of scheduler's schedule function
+void schedule();
+
+#include "time.h"
+
+void task_sleep(uint32_t ticks) {
     if (!current_task) return;
-
-    // Mark current task as ready (unless terminating)
-    if (current_task->state != TASK_TERMINATED) {
-        current_task->state = TASK_READY;
-    }
-
-    // Find next runnable task
-    task_t* next = current_task->next;
-    while (next && next->state != TASK_READY) {
-        next = next->next;
-    }
-    if (!next) next = ready_queue; // Wrap around
     
-    if (next && next->state == TASK_READY) {
-        next->state = TASK_RUNNING;
-        
-        // Switch context
-        asm volatile("cli");
-        context_switch(&current_task->esp, &next->esp);
-        asm volatile("sti");
-        
-        current_task = next;
-        
-        // Debug output
-        print("Switched to ");
-        print(current_task->name);
-        print(" (PID: ");
-        char pid_str[10];
-        int_to_ascii(current_task->pid, pid_str);
-        print(pid_str);
-        print(")\n");
-    }
+    current_task->sleep_until = get_ticks() + ticks;
+    current_task->state = TASK_BLOCKED;
+    schedule();
 }

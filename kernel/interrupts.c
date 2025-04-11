@@ -16,8 +16,8 @@ void register_interrupt_handler(uint8_t irq, void (*handler)(void)) {
     irq_handlers[irq] = handler;
 }
 
-// Common ISR stub that calls the registered handler
-void isr_handler(uint8_t irq) {
+// Internal IRQ handler that calls the registered handler
+static void internal_irq_handler(uint8_t irq) {
     if (irq_handlers[irq]) {
         irq_handlers[irq]();
     }
