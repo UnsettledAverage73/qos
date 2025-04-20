@@ -4,6 +4,7 @@
 #include "task.h"
 #include "scheduler.h"
 #include "interrupts.h"
+#include "memory.h"
 
 // Forward declarations
 void interrupts_init();
@@ -39,9 +40,10 @@ void kernel_main() {
     print("QOS Preemptive Multitasking Test\n\n");
 
     // Initialize systems
-    init_scheduler();    // Initialize scheduler
-    interrupts_init();   // Set up timer interrupts
-    init_tasking();      // Initialize task system
+    init_heap();        // Initialize memory management
+    init_scheduler();   // Initialize scheduler
+    interrupts_init();  // Set up timer interrupts
+    init_tasking();     // Initialize task system
 
     // Create test tasks
     create_task(task1);
